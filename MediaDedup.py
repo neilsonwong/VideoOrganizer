@@ -2,10 +2,13 @@
 # -*- coding: utf-8 -*-
 
 import csv
+import os
+import re
 
 shows = {}
 locations = {}
-folders = []
+# folders = ["/home/neilson/Music", "/home/neilson/temp"]
+folders = ["/home/neilson/Videos"]
 
 #load titles into our db
 with open('anime-titles.dat.gz.txt') as csvFile:
@@ -51,26 +54,42 @@ def getData(filename):
 	return (aid, title, num)
 
 def scanFolders():
+	#"(\[(?P<group>[0-9a-zA-Z_]+)\])
+	#[ ._-]*
+	#(?P<series>.+?[ ._-].+?)\
+	#[ ._-]+
+	#(?P<ep>\d{1,3})
+	#[ ._-]+
+	#(\[|\(|[ ._])?
+	#(?P<res>\d{1,3})p
+	#\]
+	#\.
+	#(?P<format>mkv|avi|mp4|m4p|ogg|mov|mpg|mpeg)"
+
+	patern = re.compile(r"(\[(?P<group>[0-9a-zA-Z_]+)\])[ ._-]*(?P<series>.+?[ ._-].+?)[ ._-]+(?P<ep>\d{1,3})[ ._-]+(\[|\(|[ ._])?(?P<res>\d{1,3})p\]\.(?P<format>mkv|avi|mp4|m4p|ogg|mov|mpg|mpeg)")
+
 	#scan each of the folders, and catalogue the locations for each of the files
-	
+	for folder in folders:
+		for subdir, dirs, files in os.walk(folder):
+			for file in files:
+				m = patern.match(file)
+				if (m):
+					addShow(m.group('group'), m.group('series'), m.group('ep'), m.group('res'), m.group('format'))
+
 	return
 
+def addShow(group, series, ep, resolution, format):
+	print (group)
+	print (series)
+	print (ep)
+	print (resolution)
+	print (format)
+	print
 
-
-
-
-
+	return
 
 def test():
-	#"[HorribleSubs] Masamune-kun no Revenge - 12 [720p].mkv"
-	data = getData("[HorribleSubs] Masamune-kun no Revenge - 12 [720p].mkv");
-	print("Aid: " + data[0])
-	print("Title: " + data[1]);
-	print("Ep: " + data[2])
+	scanFolders()
 
-	data2 = getData("[HorribleSubs] 政宗くんのリベンジ - 6 [1080p].mkv");
-	print("Aid: " + data2[0])
-	print("Title: " + data2[1]);
-	print("Ep: " + data2[2])
 
 test();
