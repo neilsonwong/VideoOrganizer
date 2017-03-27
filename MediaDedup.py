@@ -9,6 +9,7 @@ shows = {}
 locations = {}
 # folders = ["/home/neilson/Music", "/home/neilson/temp"]
 folders = ["/home/neilson/Videos"]
+conflicts = {}
 
 #load titles into our db
 with open('anime-titles.dat.gz.txt') as csvFile:
@@ -74,22 +75,51 @@ def scanFolders():
 			for file in files:
 				m = patern.match(file)
 				if (m):
-					addShow(m.group('group'), m.group('series'), m.group('ep'), m.group('res'), m.group('format'))
+					addShow(m.group('group'), m.group('series'), m.group('ep'), m.group('res'), m.group('format'), os.path.join(subdir, file))
 
 	return
 
-def addShow(group, series, ep, resolution, format):
-	print (group)
-	print (series)
-	print (ep)
-	print (resolution)
-	print (format)
-	print
+def addShow(group, series, ep, resolution, format, path):
+	#print(group)
+	#print(series)
+	#print(ep)
+	#print(resolution)
+	#print(format)
+	#print
 
+	#add to db
+	if locations.get(series, None) == None:
+		#create group
+		locations[series] = {}
+
+	showObj = {"group": group, "resolution": resolution, "format": format, "path": path}
+
+	if locations.get(series).get(ep, None) == None:
+		locations.get(series)[ep] = [showObj]
+	else:
+		locations.get(series)[ep].append(showObj)
+
+	return
+
+def getShow(series):
+
+	return
+
+def printLocations():
+	for series in locations:
+	    print(series)
+	    for ep in locations[series]:
+	    	if (len(locations[series][ep]) == 1):
+		        	print("\t" + ep + " :\t" + locations[series][ep][0]['path'])
+	    	else:
+	    		print("\t" + ep + " :")
+		    	for i, val in enumerate(locations[series][ep]):
+		        	print("\t\t" + val['path'])
 	return
 
 def test():
 	scanFolders()
+	printLocations()
 
 
 test();
