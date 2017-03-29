@@ -7,9 +7,9 @@ import re
 
 shows = {}
 locations = {}
-# folders = ["/home/neilson/Music", "/home/neilson/temp"]
-folders = ["/home/neilson/Videos"]
-conflicts = {}
+folders = ["E:/temp", "F:/Neilson's Downloads"]
+# folders = ["/home/neilson/Videos"]
+multiples = {}
 
 #load titles into our db
 with open('anime-titles.dat.gz.txt') as csvFile:
@@ -67,7 +67,7 @@ def scanFolders():
 	#\.
 	#(?P<format>mkv|avi|mp4|m4p|ogg|mov|mpg|mpeg)"
 
-	patern = re.compile(r"(\[(?P<group>[0-9a-zA-Z_]+)\])[ ._-]*(?P<series>.+?[ ._-].+?)[ ._-]+(?P<ep>\d{1,3})[ ._-]+(\[|\(|[ ._])?(?P<res>\d{1,3})p\]\.(?P<format>mkv|avi|mp4|m4p|ogg|mov|mpg|mpeg)")
+	patern = re.compile(r"(\[(?P<group>[0-9a-zA-Z_]+)\])[ ._-]*(?P<series>.+)?[ ._-].+?[ ._-]+(?P<ep>\d{1,3})[ ._-]+(\[|\(|[ ._])?(?P<res>\d{1,3})p\]\.(?P<format>mkv|avi|mp4|m4p|ogg|mov|mpg|mpeg)")
 
 	#scan each of the folders, and catalogue the locations for each of the files
 	for folder in folders:
@@ -75,7 +75,7 @@ def scanFolders():
 			for file in files:
 				m = patern.match(file)
 				if (m):
-					addShow(m.group('group'), m.group('series'), m.group('ep'), m.group('res'), m.group('format'), os.path.join(subdir, file))
+					addShow(m.group('group'), m.group('series').lower(), m.group('ep'), m.group('res'), m.group('format'), os.path.join(subdir, file))
 
 	return
 
@@ -98,6 +98,9 @@ def addShow(group, series, ep, resolution, format, path):
 		locations.get(series)[ep] = [showObj]
 	else:
 		locations.get(series)[ep].append(showObj)
+		if multiples.get(series, None) == None:
+			multiples[series] = {}
+		multiples[series][ep] = locations.get(series)[ep]
 
 	return
 
@@ -107,19 +110,31 @@ def getShow(series):
 
 def printLocations():
 	for series in locations:
-	    print(series)
-	    for ep in locations[series]:
-	    	if (len(locations[series][ep]) == 1):
-		        	print("\t" + ep + " :\t" + locations[series][ep][0]['path'])
-	    	else:
-	    		print("\t" + ep + " :")
-		    	for i, val in enumerate(locations[series][ep]):
-		        	print("\t\t" + val['path'])
+		print(series + " - " + str(len(locations[series]))+ " eps")
+		for ep in sorted(locations[series]):
+			if (len(locations[series][ep]) == 1):
+					print("\t" + ep + " :\t" + locations[series][ep][0]['path'])
+			else:
+				print("\t" + ep + " :")
+				for i, val in enumerate(locations[series][ep]):
+					print("\t\t" + val['path'])
+	return
+
+def printConflicts():
+	for series in multiples:
+		print(series)
+		for ep in mutiples[series]:
+			if (len(multiples[series][ep]) == 1):
+					print("\t" + ep + " :\t" + multiples[series][ep][0]['path'])
+			else:
+				print("\t" + ep + " :")
+				for i, val in enumerate(multiples[series][ep]):
+					print("\t\t" + val['path'])
 	return
 
 def test():
 	scanFolders()
 	printLocations()
-
+	printConflicts()
 
 test();
